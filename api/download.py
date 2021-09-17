@@ -71,15 +71,7 @@ async def download_results(uuid, postdatas, index):
           must_not=blocklist
           )
 
-    # index = 'book_information_test'
-    # # 测试语句
-    # q0 = Q("term",author__keyword="顾永华")
-    # q = Q('bool',
-    #       must=[],
-    #       should=[q0],
-    #       must_not=[]
-    #       )
-    # print(q)
+
     results, total = query_es_return_list(index, q)
     results = itertools.islice(results, 0, 50000)
     print(total)
