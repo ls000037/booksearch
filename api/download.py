@@ -10,7 +10,7 @@ import zipfile
 from sanic.response import file_stream
 import itertools
 import pandas as pd
-
+from auth import protected
 download_bp = Blueprint('download_bp')
 
 
@@ -75,8 +75,8 @@ async def download_results(uuid, postdatas, index):
     results, total = query_es_return_list(index, q)
     results = itertools.islice(results, 0, 50000)
     print(total)
-    # if total > 300000:
-    #     return ([], total)11
+    if total > 300000:
+        return ([], total)
     # 如果查询结果为空，返回False
     if total == 0:
         return ([], total)
@@ -285,8 +285,8 @@ async def obdownload(requset, uuid):
         try:
             file_path, total = await download_results(uuid, searchdata, open_search_index)
             # 超过30万判断
-            # if total > 300000:
-            #     return json({"code": 500, "msg": "下载量超过30万，如需下载请联系工作人员！"}, ensure_ascii=False)
+            if total > 300000:
+                return json({"code": 500, "msg": "下载量超过30万，如需下载请联系工作人员！"}, ensure_ascii=False)
             # file_path="/data/published/app/py/booksearch/api/../static/download/1630546685.zip"
             # 如果查询结果为空 返回空
             if not file_path:
@@ -309,3 +309,18 @@ async def obdownload(requset, uuid):
             print(e, "导出错误")
             return json({"code": 500, "msg": "导出错误或者已超时"}, ensure_ascii=False)
     return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
+
+
+# #验证下载状态是否超时
+@download_bp.route('/verify/<uuid:str>', methods=['GET'])
+@protected
+async def uuid_verify(requset, uuid: str):
+    if requset.method == 'GET':
+        redis = await get_redis_pool()
+        data = await redis.get("searchid_" + str(uuid))
+        await redis.close()
+        if not data:
+            return json({"code": 500, "msg": "下载状态超时，请重新检索"})
+        return json({"code": 200, "msg": "下载状态正常"})
+    return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
+
