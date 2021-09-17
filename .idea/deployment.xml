@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="es@192.172.9.200:22" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="es@192.172.9.200:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/data/PROJECT/published/app/py/booksearch" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="es@192.172.9.200:22 password">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_718" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="root@121.5.199.139:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/pycharm_project_919" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

@@ -1,0 +1,227 @@
+   {"book_list":"",
+   "channel_type":"",
+   "sale_time":[]
+   }
+
+
+    [{"category":"文学"},{"category":"军事"},{"category":"政治"},{"category":"小说"},{"category":"体育"},{"category":"工程技术"},{"category": "社会文化"},{"category": "经济"},{"category": "法律"},{"category": "艺术"}]
+
+#部分字段构造非语句
+match_not_seq = ~Q("match", first_channel=data['value']) | ~Q("match",
+                                                                                          second_channel=data[
+                                                                                              'value']) | ~Q(
+                                "match",
+                                store=
+                                data[
+                                    'value']) | ~Q("match", isbn=data['value']) | ~Q(
+                                "match",
+                                book_name=
+                                data[
+                                    'value']) | ~Q(
+                                "match", category=data['value']) | ~Q("match", slogan=data['value']) | ~Q(
+                                "match",
+                                book_description=
+                                data[
+                                    'value']) | ~Q(
+                                "match", catalogue=data['value']) | ~Q("match", languages=data['value']) | ~Q(
+                                "match", publishing_house=data['value']) | ~Q("match", edition=data['value']) | ~Q(
+                                "match",
+                                impression=
+                                data[
+                                    'value']) | ~Q("match",
+                                                   author_=
+                                                   data[
+                                                       'value']) | ~Q(
+                                "match", shuppites=data['value']) | ~Q("match", format=data['value']) | ~Q("match",
+                                                                                                           is_suit=
+                                                                                                           data[
+                                                                                                               'value']) | ~Q(
+                                "match", binding_layout=data['value']) | ~Q(
+                                "match", papers=data['value']) | ~Q("match", uploader=data['value']) | ~Q(
+                                "match", published_year_range=data['value']) | ~Q("match",
+                                                                                  comments_range=
+                                                                                  data[
+                                                                                      'value']) | ~Q("match",
+                                                                                                     premium_range=data[
+                                                                                                         'value']) | ~Q(
+                                "match", selling_stores_range=data['value']) | ~Q("match",
+                                                                                  create_type=
+                                                                                  data[
+                                                                                      'value'])
+                            #
+                            # term_not_seq = Q("term", first_channel=data['value']) & Q("term",
+                            #                                                       second_channel=data['value']) & Q(
+                            #     "term",
+                            #     store__keyword=
+                            #     data[
+                            #         'value']) & Q("term", isbn=data['value']) & Q(
+                            #     "term",
+                            #     book_name__keyword=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", category=data['value']) & Q("term", slogan=data['value']) & Q(
+                            #     "term",
+                            #     book_description=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", catalogue=data['value']) & Q("term", languages=data['value']) & Q(
+                            #     "term", publishing_house__keyword=data['value']) & Q("term", edition=data['value']) & Q(
+                            #     "term",
+                            #     impression=
+                            #     data[
+                            #         'value']) & Q("term",
+                            #                       author__keyword=
+                            #                       data[
+                            #                           'value']) & Q(
+                            #     "term", shuppites=data['value']) & Q("term", format=data['value']) & Q("term",
+                            #                                                                            is_suit=
+                            #                                                                            data[
+                            #                                                                                'value']) & Q(
+                            #     "term", binding_layout=data['value']) & Q(
+                            #     "term", papers=data['value']) & Q("term", uploader=data['value']) & Q(
+                            #     "term", published_year_range=data['value']) & Q("term",
+                            #                                                     comments_range=
+                            #                                                     data[
+                            #                                                         'value']) & Q("term",
+                            #                                                                       premium_range=data[
+                            #                                                                           'value']) & Q(
+                            #     "term", selling_stores_range=data['value']) & Q("term",
+                            #                                                     create_type=
+                            #                                                     data[
+                            #                                                         'value'])
+
+
+#全部字段构造非语句
+                     match_not_seq = ~Q("match", first_channel=data['value']) & ~Q("match",
+                                                                                          second_channel=data[
+                                                                                              'value']) & ~Q(
+                                "match", store=
+                                data[
+                                    'value']) & ~Q(
+                                "tmatch", store_comments=data['value']) & ~Q("match", isbn=data['value']) & ~Q(
+                                "match",
+                                book_name=
+                                data[
+                                    'value']) & ~Q(
+                                "match", category=data['value']) & ~Q("match", slogan=data['value']) & ~Q(
+                                "match",
+                                book_description=
+                                data[
+                                    'value']) & ~Q(
+                                "match", catalogue=data['value']) & ~Q("match", languages=data['value']) & ~Q(
+                                "match",
+                                word_count=
+                                data[
+                                    'value']) & ~Q(
+                                "match", book_comments=data['value']) & ~Q("match", store_pricing=data['value']) & ~Q(
+                                "match",
+                                selling_price=data[
+                                    'value']) & ~Q(
+                                "match", publishing_house=data['value']) & ~Q("match",
+                                                                              publishing_time=data[
+                                                                                  'value']) & ~Q(
+                                "match", printing_time=data['value']) & ~Q("match", edition=data['value']) & ~Q(
+                                "match",
+                                impression=
+                                data[
+                                    'value']) & ~Q(
+                                "match", inventory=data['value']) & ~Q("match", sales=data['value']) & ~Q("match",
+                                                                                                          author=
+                                                                                                          data[
+                                                                                                              'value']) & ~Q(
+                                "match", shuppites=data['value']) & ~Q("match", format=data['value']) & ~Q("match",
+                                                                                                           is_suit=
+                                                                                                           data[
+                                                                                                               'value']) & ~Q(
+                                "match", suits=data['value']) & ~Q("match", binding_layout=data['value']) & ~Q(
+                                "term",
+                                pages=data[
+                                    'value']) & ~Q(
+                                "match", papers=data['value']) & ~Q("match", uploader=data['value']) & ~Q("term",
+                                                                                                          selling_stores=
+                                                                                                          data[
+                                                                                                              'value']) & ~Q(
+                                "match", published_year_range=data['value']) & ~Q("match",
+                                                                                  published_year_integral=data[
+                                                                                      'value']) & ~Q("match",
+                                                                                                     comments_range=
+                                                                                                     data[
+                                                                                                         'match']) & ~Q(
+                                "match", comments_integral=data['value']) & ~Q("match",
+                                                                               premium_range=data['value']) & ~Q(
+                                "match",
+                                premium_integral=data[
+                                    'value']) & ~Q(
+                                "match", selling_stores_range=data['value']) & ~Q("match",
+                                                                                  selling_stores_integral=data[
+                                                                                      'value']) & ~Q("match",
+                                                                                                     create_type=
+                                                                                                     data[
+                                                                                                         'value'])
+
+                            #
+                            # term_not_seq = Q("term", first_channel=data['value']) & Q("term",
+                            #                                                       second_channel=data['value']) & Q(
+                            #     "term", store__keyword=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", store_comments=data['value']) & Q("term", isbn=data['value']) & Q(
+                            #     "term",
+                            #     book_name__keyword=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", category=data['value']) & Q("term", slogan=data['value']) & Q(
+                            #     "term",
+                            #     book_description=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", catalogue=data['value']) & Q("term", languages=data['value']) & Q(
+                            #     "term",
+                            #     word_count=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", book_comments=data['value']) & Q("term", store_pricing=data['value']) & Q(
+                            #     "term",
+                            #     selling_price=data[
+                            #         'value']) & Q(
+                            #     "term", publishing_house__keyword=data['value']) & Q("term",
+                            #                                                          publishing_time=data[
+                            #                                                              'value']) & Q(
+                            #     "term", printing_time=data['value']) & Q("term", edition=data['value']) & Q(
+                            #     "term",
+                            #     impression=
+                            #     data[
+                            #         'value']) & Q(
+                            #     "term", inventory=data['value']) & Q("term", sales=data['value']) & Q("term",
+                            #                                                                           author__keyword=
+                            #                                                                           data[
+                            #                                                                               'value']) & Q(
+                            #     "term", shuppites=data['value']) & Q("term", format=data['value']) & Q("term",
+                            #                                                                            is_suit=
+                            #                                                                            data[
+                            #                                                                                'value']) & Q(
+                            #     "term", suits=data['value']) & Q("term", binding_layout=data['value']) & Q(
+                            #     "term",
+                            #     pages=data[
+                            #         'value']) & Q(
+                            #     "term", papers=data['value']) & Q("term", uploader=data['value']) & Q("term",
+                            #                                                                           selling_stores=
+                            #                                                                           data[
+                            #                                                                               'value']) & Q(
+                            #     "term", published_year_range=data['value']) & Q("term",
+                            #                                                     published_year_integral=data[
+                            #                                                         'value']) & Q("term",
+                            #                                                                       comments_range=
+                            #                                                                       data[
+                            #                                                                           'value']) & Q(
+                            #     "term", comments_integral=data['value']) & Q("term",
+                            #                                                  premium_range=data['value']) & Q(
+                            #     "term",
+                            #     premium_integral=data[
+                            #         'value']) & Q(
+                            #     "term", selling_stores_range=data['value']) & Q("term",
+                            #                                                     selling_stores_integral=data[
+                            #                                                         'value']) & Q("term",
+                            #                                                                       create_type=
+                            #                                                                       data[
+                            #                                                                           'value'])
