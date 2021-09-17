@@ -87,9 +87,9 @@ async def opensearch(requset, pages: str):
     if requset.method == 'POST':
         # print("getttt")
         if not pages:
-            pages = '1%10'
-        page = pages.split('%')[0]
-        size = pages.split('%')[1]
+            pages = '1&10'
+        page = pages.split('&')[0]
+        size = pages.split('&')[1]
         if not size:
             size = 10
         data = requset.json

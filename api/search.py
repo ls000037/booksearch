@@ -13,9 +13,9 @@ index=search_index
 async def search(requset, pages: str):
     if requset.method == 'POST':
         if not pages:
-            pages = '1%10'
-        page=pages.split('%')[0]
-        size=pages.split('%')[1]
+            pages = '1&10'
+        page=pages.split('&')[0]
+        size=pages.split('&')[1]
         # if not size:
         #     size = 10
         data = requset.json
