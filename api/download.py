@@ -76,7 +76,7 @@ async def download_results(uuid, postdatas, index):
     results = itertools.islice(results, 0, 50000)
     print(total)
     # if total > 300000:
-    #     return ([], total)1
+    #     return ([], total)11
     # 如果查询结果为空，返回False
     if total == 0:
         return ([], total)
