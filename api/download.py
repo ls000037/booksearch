@@ -298,7 +298,7 @@ async def obdownload(requset, uuid):
                 file_name = str(int(time.time())) + '.csv'
             return await file_stream(
                 file_path,
-                # chunk_size=1024,
+
                 mime_type="application/metalink4+xml",
                 headers={
                     "Content-Disposition": 'Attachment; filename=' + file_name,
