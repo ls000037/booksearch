@@ -311,7 +311,7 @@ async def obdownload(requset, uuid):
     return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
 
 
-# #验证下载状态是否超时
+# #验证下载状态是否超时12
 @download_bp.route('/verify/<uuid:str>', methods=['GET'])
 @protected
 async def uuid_verify(requset, uuid: str):

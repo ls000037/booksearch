@@ -124,6 +124,27 @@ async def readfile(body):
 #     time.sleep(5)
 
 # 判断格式
+async def open_verifyer(edata):
+    # global ms
+    count = 2
+    for i in edata:
+
+        for key in i:
+            if "统计月份" in key or "上架时间" in key:
+                if i[key]:
+                    try:
+                        time.strptime(i[key], "%Y-%m")
+                        # time_new=time.strftime("%Y年%m月%d日", time_old)
+                        # print(time_new)
+                    except Exception as e:
+                        return json(
+                            {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                            ensure_ascii=False)
+        count+=1
+
+    return False
+
+# 判断格式
 async def verifyer(edata):
     # global ms
     count = 2
@@ -310,15 +331,33 @@ async def upload(requset):
 
             edata = ex_data.to_json(orient='records', force_ascii=False)
 
-
         except Exception as e:
             return json({"code": 500, "msg": "读取文件失败，请检查原因"}, ensure_ascii=False)
+
+        try:
+            o_edata = pd.read_excel(f.body, engine="openpyxl", sheet_name="上架产品数据").to_json(orient='records', force_ascii=False)
+        except Exception as e:
+            return json({"code": 500, "msg": "读取 sheet--上架产品数据 失败，请检查格式是否正确"}, ensure_ascii=False)
+
+
+        try:
+            s_edata = pd.read_excel(f.body, engine="openpyxl", sheet_name="上架产品数据").to_json(orient='records', force_ascii=False)
+        except Exception as e:
+            return json({"code": 500, "msg": "读取 sheet--上架产品数据 失败，请检查格式是否正确"}, ensure_ascii=False)
         # print(js.loads(edata)) ,sheet_name='A
 
         # 验证格式是否正确，不正确返回重新上传
         verify = await verifyer(js.loads(edata))
         if verify:
             return verify
+
+        on_verify = await open_verifyer(js.loads(o_edata))
+        if on_verify:
+            return on_verify
+
+        sale_verify = await open_verifyer(js.loads(s_edata))
+        if sale_verify:
+            return sale_verify
 
         return await readfile(f.body)
 

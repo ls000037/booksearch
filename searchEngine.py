@@ -76,9 +76,13 @@ def query_es_return_list(index, query):
     # if response.success():
     #     return s.scan(), response['hits']['total']
     try:
-        results = s.scan()
+        #设置size提升迭代器遍历doc速度,实测看不到提升，保留备用
+        # results = s.params(size=50000).scan()
+        results=s.scan()
         total = s.count()
-    except Exception:
+        # print(results)
+    except Exception as e:
+        print(e)
         results = []
         total = 0
     return results, total
@@ -692,6 +696,7 @@ async def get_results(postdatas, index, page, size):
     if size == 0:
 
         for i in results:
+
             # 遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
             dict_data = {}
             for key in key_data:
@@ -757,47 +762,54 @@ async def get_results(postdatas, index, page, size):
 
     # 查询指定数量结果
     else:
+        nowpage = 1
+        print(page,size)
+        for i in results:
         # nowpage = 1
+        # 传统方法每页size条数据分页
+            if (nowpage >= page * size - (size - 1)) & (nowpage <= page * size):
+                dict_data = {}
+                for key in key_data:
+                    try:
+                        dict_data[key] = i[key]
+                        if i[key] == None or i[key] == -1 or i[key] == -0.1:
+                            dict_data[key] = "未知"
+                    except Exception:
+                        dict_data[key] = "未知"
+                try:
+                    pg_result.append(dict_data)
 
-        # for i in results:
-        # # nowpage = 1
-        # # 传统方法每页size条数据分页
-        #     if (nowpage >= page * size - (size - 1)) & (nowpage <= page * size):
-        #         dict_data = {}
-        #         for key in key_data:
-        #             try:
-        #                 dict_data[key] = i[key]
-        #                 if i[key] == None or i[key] == -1 or i[key] == -0.1:
-        #                     dict_data[key] = "未知"
-        #             except Exception:
-        #                 dict_data[key] = "未知"
-        #         try:
-        #             pg_result.append(dict_data)
-        #
-        #         except Exception as e:
-        #             print("查询结果数据append出错", e)
-        #             continue
-        #     nowpage += 1
-
+                except Exception as e:
+                    print("查询结果数据append出错", e)
+                    continue
+            nowpage += 1
+        # i=1
+        # for key in results:
+        #     print(key)
+        #     i+=1
+        #     if i==10:
+        #         break
 
         #利用迭代器切片分页
-        for i in itertools.islice(results, page * size - size, page * size):
-
-            #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
-            dict_data={}
-            for key in key_data:
-                try:
-                    dict_data[key]=i[key]
-                    if i[key] == None or i[key] == -1 or i[key] == -0.1:
-                        dict_data[key] = "未知"
-                except Exception:
-                    dict_data[key]="未知"
-            try:
-                pg_result.append(dict_data)
-
-            except Exception as e:
-                print("查询结果数据append出错", e)
-                continue
+        # for i in itertools.islice(results, page * size - size, page * size):
+        #     # s = s.fields([])  # only get ids, otherwise `fields` takes a list of field names
+        #     #scan()查询使用meta.id取到 文档id
+        #     # print(i.meta.id)
+        #     #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
+        #     dict_data={}
+        #     for key in key_data:
+        #         try:
+        #             dict_data[key]=i[key]
+        #             if i[key] == None or i[key] == -1 or i[key] == -0.1:
+        #                 dict_data[key] = "未知"
+        #         except Exception:
+        #             dict_data[key]="未知"
+        #     try:
+        #         pg_result.append(dict_data)
+        #
+        #     except Exception as e:
+        #         print("查询结果数据append出错", e)
+        #         continue
 
             # nowpage += 1
                 # pg_result.append(
