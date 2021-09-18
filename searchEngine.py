@@ -53,7 +53,7 @@ import itertools
 #     "create_type": [{"value": "import or etl", "logic": "&", "condition": "term"}],
 #     "data_source": [{"value": "", "logic": "&", "condition": "term"}],
 #     "create_time": [{"value": "", "logic": "&", "condition": "term"}],
-#     "update_time": [{"value": "", "logic": "&", "condition": "term"}]
+
 # }
 def sort_es_return_list(index, query):
     search_context = Search(using=es_con, index=index)
