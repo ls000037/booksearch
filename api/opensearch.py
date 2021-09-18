@@ -30,11 +30,11 @@ async def open_engine(data, page, size):
         q2 = []
 
     sale_time = "sale_time"
-    if data[sale_time]["timerange"][0] == "":
+    if not data[sale_time]["timerange"][0]:
         begin_date = '0000'
     else:
         begin_date = data[sale_time]["timerange"][0]
-    if data[sale_time]["timerange"][1] == "":
+    if not data[sale_time]["timerange"][1]:
         end_date = '9999'
     else:
         end_date = data[sale_time]["timerange"][1]

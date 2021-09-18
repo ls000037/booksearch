@@ -760,29 +760,28 @@ async def get_results(postdatas, index, page, size):
         await redis.close()
         return (pg_result, total, uuid_value)
 
-    # 查询指定数量结果
+    # 查询指定数量结果.
     else:
-        nowpage = 1
-        print(page,size)
-        for i in results:
         # nowpage = 1
-        # 传统方法每页size条数据分页
-            if (nowpage >= page * size - (size - 1)) & (nowpage <= page * size):
-                dict_data = {}
-                for key in key_data:
-                    try:
-                        dict_data[key] = i[key]
-                        if i[key] == None or i[key] == -1 or i[key] == -0.1:
-                            dict_data[key] = "未知"
-                    except Exception:
-                        dict_data[key] = "未知"
-                try:
-                    pg_result.append(dict_data)
-
-                except Exception as e:
-                    print("查询结果数据append出错", e)
-                    continue
-            nowpage += 1
+        # for i in results:
+        # # nowpage = 1
+        # # 传统方法每页size条数据分页
+        #     if (nowpage >= page * size - (size - 1)) & (nowpage <= page * size):
+        #         dict_data = {}
+        #         for key in key_data:
+        #             try:
+        #                 dict_data[key] = i[key]
+        #                 if i[key] == None or i[key] == -1 or i[key] == -0.1:
+        #                     dict_data[key] = "未知"
+        #             except Exception:
+        #                 dict_data[key] = "未知"
+        #         try:
+        #             pg_result.append(dict_data)
+        #
+        #         except Exception as e:
+        #             print("查询结果数据append出错", e)
+        #             continue
+        #     nowpage += 1
         # i=1
         # for key in results:
         #     print(key)
@@ -791,25 +790,25 @@ async def get_results(postdatas, index, page, size):
         #         break
 
         #利用迭代器切片分页
-        # for i in itertools.islice(results, page * size - size, page * size):
-        #     # s = s.fields([])  # only get ids, otherwise `fields` takes a list of field names
-        #     #scan()查询使用meta.id取到 文档id
-        #     # print(i.meta.id)
-        #     #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
-        #     dict_data={}
-        #     for key in key_data:
-        #         try:
-        #             dict_data[key]=i[key]
-        #             if i[key] == None or i[key] == -1 or i[key] == -0.1:
-        #                 dict_data[key] = "未知"
-        #         except Exception:
-        #             dict_data[key]="未知"
-        #     try:
-        #         pg_result.append(dict_data)
-        #
-        #     except Exception as e:
-        #         print("查询结果数据append出错", e)
-        #         continue
+        for i in itertools.islice(results, page * size - size, page * size):
+            # s = s.fields([])  # only get ids, otherwise `fields` takes a list of field names
+            #scan()查询使用meta.id取到 文档id
+            # print(i.meta.id)
+            #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
+            dict_data={}
+            for key in key_data:
+                try:
+                    dict_data[key]=i[key]
+                    if i[key] == None or i[key] == -1 or i[key] == -0.1:
+                        dict_data[key] = "未知"
+                except Exception:
+                    dict_data[key]="未知"
+            try:
+                pg_result.append(dict_data)
+
+            except Exception as e:
+                print("查询结果数据append出错", e)
+                continue
 
             # nowpage += 1
                 # pg_result.append(
