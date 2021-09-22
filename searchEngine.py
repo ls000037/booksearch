@@ -653,17 +653,17 @@ async def get_results(postdatas, index, page, size):
     uuid_str_redis = "searchid_" + uuid_value
     tmpdata = json.dumps(postdatas)
 
-    # 如果是全部查询 判断是否存在缓存
-    if size == 0:
-        # #判断postdatas是否存在于redis的keys中
-        search_uuid = hashlib.md5(tmpdata.encode(encoding='UTF-8')).hexdigest()
-        cache = await redis.get("search_cache_" + search_uuid)
-
-        # 如果存在则从redis取缓存的值
-        if cache:
-            pg_result = json.loads(cache)
-            total = len(pg_result)
-            return (pg_result, total, uuid_value)
+    # # 如果是全部查询 判断是否存在缓存
+    # if size == 0:
+    #     # #判断postdatas是否存在于redis的keys中
+    #     search_uuid = hashlib.md5(tmpdata.encode(encoding='UTF-8')).hexdigest()
+    #     cache = await redis.get("search_cache_" + search_uuid)
+    #
+    #     # 如果存在则从redis取缓存的值
+    #     if cache:
+    #         pg_result = json.loads(cache)
+    #         total = len(pg_result)
+    #         return (pg_result, total, uuid_value)
 
     # 正常查询流程
     mysearch = uni_search(postdatas)
@@ -692,76 +692,76 @@ async def get_results(postdatas, index, page, size):
     key_data = ["first_channel", "second_channel", "isbn", "book_name", "category", "author",
                 "publishing_house", "publishing_time", "sales", "store", "slogan", "book_comments", "store_pricing",
                 "selling_price", "shuppites", "sales_month", "shelf_time"]
-    # 查询所有结果
-    if size == 0:
-
-        for i in results:
-
-            # 遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
-            dict_data = {}
-            for key in key_data:
-                try:
-                    dict_data[key] = i[key]
-                    if i[key] == None or i[key] == -1 or i[key] == -0.1:
-                        dict_data[key] = "未知"
-                except Exception:
-                    dict_data[key] = "未知"
-
-            try:
-                pg_result.append(dict_data)
-
-                    # 全部字段
-                    # {"first_channel": i.first_channel, "second_channel": i.second_channel, "store": i.store,
-                    #  "store_comments": i.store_comments, "isbn": i.isbn, "book_name": i.book_name,
-                    #  "category": i.category,
-                    #  "slogan": i.slogan, "book_description": i.book_description,
-                    #  "languages": i.languages \
-                    #     , "word_count": i.word_count, "book_comments": i.book_comments, "store_pricing": i.store_pricing,
-                    #  "selling_price": i.selling_price,
-                    #  "publishing_house": i.publishing_house, "publishing_time": i.publishing_time,
-                    #  "printing_time": i.printing_time,
-                    #  "edition": i.edition, "impression": i.impression \
-                    #     , "inventory": i.inventory, "sales": i.sales, "author": i.author,
-                    #  "shuppites": i.shuppites, "format": i.format,
-                    #  "is_suit": i.is_suit, "suits": i.suits, "binding_layout": i.binding_layout,
-                    #  "pages": i.pages \
-                    #     , "papers": i.papers, "uploader": i.uploader, "selling_stores": i.selling_stores,
-                    #  "published_year_range": i.published_year_range,
-                    #  "published_year_integral": i.published_year_integral,
-                    #  "comments_range": i.comments_range, "comments_integral": i.comments_integral, \
-                    #  "premium_range": i.premium_range, "premium_integral": i.premium_integral,
-                    #  "selling_stores_range": i.selling_stores_range,
-                    #  "selling_stores_integral": i.selling_stores_integral, "data_source": i.data_source,"total_integral":i.total_integral,
-                    #  "sales_month":i.sales_month, "shelf_time":i.shelf_time,
-                    #  "create_time": i.create_time, "update_time": i.update_time})
-
-                    # 节约redis缓存空间，只取展示字段
-                    # pg_result.append({"first_channel": i.first_channel, "second_channel": i.second_channel, "isbn": i.isbn,
-                    #  "book_name": i.book_name, "category": i.category, "author": i.author,
-                    #  "publishing_house": i.publishing_house, "publishing_time": i.publishing_time,
-                    #  # "sales_month": i.sales_month,"shelf_time": i.shelf_time,
-                    #  "sales": i.sales, "store": i.store,
-                    #  "slogan": i.slogan, "book_comments": i.book_comments, "store_pricing": i.store_pricing,
-                    #  "selling_price": i.selling_price,
-                    #  "shuppites": i.shuppites
-                    #
-                    #  })
-            except Exception as e:
-                continue
-
-        # 缓存查询结果到redis
-        if total != 0:
-            md5data = json.dumps(postdatas)
-            uuid_trans = hashlib.md5(md5data.encode(encoding='UTF-8')).hexdigest()
-            uuid_cache = "search_cache_" + uuid_trans
-            await redis.set(uuid_cache, json.dumps(pg_result))
-            await redis.expire(uuid_cache, 3600)
-
-        await redis.close()
-        return (pg_result, total, uuid_value)
-
-    # 查询指定数量结果.
-    else:
+    # # 查询所有结果
+    # if size == 0:
+    #
+    #     for i in results:
+    #
+    #         # 遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
+    #         dict_data = {}
+    #         for key in key_data:
+    #             try:
+    #                 dict_data[key] = i[key]
+    #                 if i[key] == None or i[key] == -1 or i[key] == -0.1:
+    #                     dict_data[key] = "未知"
+    #             except Exception:
+    #                 dict_data[key] = "未知"
+    #
+    #         try:
+    #             pg_result.append(dict_data)
+    #
+    #                 # 全部字段
+    #                 # {"first_channel": i.first_channel, "second_channel": i.second_channel, "store": i.store,
+    #                 #  "store_comments": i.store_comments, "isbn": i.isbn, "book_name": i.book_name,
+    #                 #  "category": i.category,
+    #                 #  "slogan": i.slogan, "book_description": i.book_description,
+    #                 #  "languages": i.languages \
+    #                 #     , "word_count": i.word_count, "book_comments": i.book_comments, "store_pricing": i.store_pricing,
+    #                 #  "selling_price": i.selling_price,
+    #                 #  "publishing_house": i.publishing_house, "publishing_time": i.publishing_time,
+    #                 #  "printing_time": i.printing_time,
+    #                 #  "edition": i.edition, "impression": i.impression \
+    #                 #     , "inventory": i.inventory, "sales": i.sales, "author": i.author,
+    #                 #  "shuppites": i.shuppites, "format": i.format,
+    #                 #  "is_suit": i.is_suit, "suits": i.suits, "binding_layout": i.binding_layout,
+    #                 #  "pages": i.pages \
+    #                 #     , "papers": i.papers, "uploader": i.uploader, "selling_stores": i.selling_stores,
+    #                 #  "published_year_range": i.published_year_range,
+    #                 #  "published_year_integral": i.published_year_integral,
+    #                 #  "comments_range": i.comments_range, "comments_integral": i.comments_integral, \
+    #                 #  "premium_range": i.premium_range, "premium_integral": i.premium_integral,
+    #                 #  "selling_stores_range": i.selling_stores_range,
+    #                 #  "selling_stores_integral": i.selling_stores_integral, "data_source": i.data_source,"total_integral":i.total_integral,
+    #                 #  "sales_month":i.sales_month, "shelf_time":i.shelf_time,
+    #                 #  "create_time": i.create_time, "update_time": i.update_time})
+    #
+    #                 # 节约redis缓存空间，只取展示字段
+    #                 # pg_result.append({"first_channel": i.first_channel, "second_channel": i.second_channel, "isbn": i.isbn,
+    #                 #  "book_name": i.book_name, "category": i.category, "author": i.author,
+    #                 #  "publishing_house": i.publishing_house, "publishing_time": i.publishing_time,
+    #                 #  # "sales_month": i.sales_month,"shelf_time": i.shelf_time,
+    #                 #  "sales": i.sales, "store": i.store,
+    #                 #  "slogan": i.slogan, "book_comments": i.book_comments, "store_pricing": i.store_pricing,
+    #                 #  "selling_price": i.selling_price,
+    #                 #  "shuppites": i.shuppites
+    #                 #
+    #                 #  })
+    #         except Exception as e:
+    #             continue
+    #
+    #     # 缓存查询结果到redis
+    #     if total != 0:
+    #         md5data = json.dumps(postdatas)
+    #         uuid_trans = hashlib.md5(md5data.encode(encoding='UTF-8')).hexdigest()
+    #         uuid_cache = "search_cache_" + uuid_trans
+    #         await redis.set(uuid_cache, json.dumps(pg_result))
+    #         await redis.expire(uuid_cache, 3600)
+    #
+    #     await redis.close()
+    #     return (pg_result, total, uuid_value)
+    #
+    # # 查询指定数量结果.
+    # else:
         # nowpage = 1
         # for i in results:
         # # nowpage = 1
@@ -790,25 +790,25 @@ async def get_results(postdatas, index, page, size):
         #         break
 
         #利用迭代器切片分页
-        for i in itertools.islice(results, page * size - size, page * size):
-            # s = s.fields([])  # only get ids, otherwise `fields` takes a list of field names
-            #scan()查询使用meta.id取到 文档id
-            # print(i.meta.id)
-            #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
-            dict_data={}
-            for key in key_data:
-                try:
-                    dict_data[key]=i[key]
-                    if i[key] == None or i[key] == -1 or i[key] == -0.1:
-                        dict_data[key] = "未知"
-                except Exception:
-                    dict_data[key]="未知"
+    for i in itertools.islice(results, page * size - size, page * size):
+        # s = s.fields([])  # only get ids, otherwise `fields` takes a list of field names
+        #scan()查询使用meta.id取到 文档id
+        # print(i.meta.id)
+        #遍历判断文档是否覆盖到所有需要的key ,如果字段缺少或者字段值为空，则重新给字段赋值"未知"
+        dict_data={}
+        for key in key_data:
             try:
-                pg_result.append(dict_data)
+                dict_data[key]=i[key]
+                if i[key] == None or i[key] == -1 or i[key] == -0.1:
+                    dict_data[key] = "未知"
+            except Exception:
+                dict_data[key]="未知"
+        try:
+            pg_result.append(dict_data)
 
-            except Exception as e:
-                print("查询结果数据append出错", e)
-                continue
+        except Exception as e:
+            print("查询结果数据append出错", e)
+            continue
 
             # nowpage += 1
                 # pg_result.append(
@@ -851,5 +851,5 @@ async def get_results(postdatas, index, page, size):
                 #  "create_time": i.create_time, "update_time": i.update_time})
 
 
-        await redis.close()
-        return (pg_result, total, uuid_value)
+    await redis.close()
+    return (pg_result, total, uuid_value)

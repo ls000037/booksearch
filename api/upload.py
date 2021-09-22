@@ -174,7 +174,7 @@ async def open_verifyer(edata):
                             # print(time_new)
                         except Exception as e:
                             return json(
-                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01)，请纠正后再上传!"},
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01或2020-01)，请纠正后再上传!"},
                                 ensure_ascii=False)
         count+=1
 
@@ -209,16 +209,16 @@ async def verifyer(edata):
                         ensure_ascii=False)
 
             # ISBN单独验证（加入mutisearch）
-            elif "ISBN" in key:
-                if i[key]:
-                    # 判断是否为数字格式
-                    try:
-                        str(i[key])
-                    except Exception:
-
-                        # if not isinstance(str(i[key]), str):
-                        return json({"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段不符合格式，请纠正后再上传!"},
-                                    ensure_ascii=False)
+            # elif "ISBN" in key:
+            #     if i[key]:
+            #         # 判断是否为数字格式
+            #         try:
+            #             str(i[key])
+            #         except Exception:
+            #
+            #             # if not isinstance(str(i[key]), str):
+            #             return json({"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段不符合格式，请纠正后再上传!"},
+            #                         ensure_ascii=False)
                     # 利用每个isbn搜索书籍对应的书店数量信息，备用
                     # ms=ms.add(Search().filter('match_phrase', isbn=i["ISBN"]))
                 # else:
@@ -226,7 +226,7 @@ async def verifyer(edata):
                 #         {"code": 500, "msg": "第" + str(count) + "行（包括表头）数据，'" + key + "'字段为空值，请纠正后再上传!"},
                 #         ensure_ascii=False)
 
-            # # 整数类型判断（非必填项）
+            # # 整数类型判断（必填项）
             # elif "版本" in key or "印次" in key:
             #     if i[key]:
             #         # 判断是否为数字格式
@@ -250,10 +250,11 @@ async def verifyer(edata):
             # 字符串型判断（必填项）
             elif "图书名称" in key or "上传人员" in key:
                 if i[key]:
+                    pass
                     # 判断是否为字符串格式
-                    if not isinstance(i[key], str):
-                        return json({"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段不符合格式，请纠正后再上传!"},
-                                    ensure_ascii=False)
+                    # if not isinstance(i[key], str):
+                    #     return json({"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段不符合格式，请纠正后再上传!"},
+                    #                 ensure_ascii=False)
                 else:
                     return json(
                         {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段为必填，当前为空值，请纠正后再上传!"},

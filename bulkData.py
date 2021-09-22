@@ -143,28 +143,35 @@ def generate_actions(index, datas,sheet):
                     idata['copyright_month'] = time.strftime("%Y-%m", timeArray)
             except Exception as e:
                 print(e)
-      # 转换上架时间戳为正常格式
-        try:
+                # 数据类型
+            idata["create_type"] = "import"
 
-            if isinstance(idata['shelf_time'], int):
-                print(idata['shelf_time'])
-                timestamp = int(str(idata['shelf_time'])[:-3])
+            idata["update_time"] = dt.strftime('%Y-%m-%dT%H:%M:%S%z')
+        if sheet == "上架产品数据" or sheet == "上架产品数据模板":
+        # 转换上架时间戳为正常格式
+            try:
 
-                timeArray = time.localtime(timestamp)
-                idata['shelf_time'] = time.strftime("%Y-%m-%d", timeArray)
-        except Exception as e:
-            print(e)
-        # 转换统计月份戳为正常格式
-        try:
+                if isinstance(idata['shelf_time'], int):
 
-            if isinstance(idata['statistical_month'], int):
-                print(idata['statistical_month'])
-                timestamp = int(str(idata['statistical_month'])[:-3])
+                    timestamp = int(str(idata['shelf_time'])[:-3])
 
-                timeArray = time.localtime(timestamp)
-                idata['statistical_month'] = time.strftime("%Y-%m", timeArray)
-        except Exception as e:
-            print(e)
+                    timeArray = time.localtime(timestamp)
+                    idata['shelf_time'] = time.strftime("%Y-%m-%d", timeArray)
+            except Exception as e:
+                print(e)
+
+        if sheet == "产品动销情况" or sheet == "产品动销情况模板":
+        # 转换统计月份戳为正常格式产品动销情况
+            try:
+
+                if isinstance(idata['statistical_month'], int):
+
+                    timestamp = int(str(idata['statistical_month'])[:-3])
+
+                    timeArray = time.localtime(timestamp)
+                    idata['statistical_month'] = time.strftime("%Y-%m", timeArray)
+            except Exception as e:
+                print(e)
 
             # idata['publishing_time'] = idata['publishing_time'].replace("/", "-")
             # idata['data_source']= None
@@ -207,10 +214,6 @@ def generate_actions(index, datas,sheet):
             #     idata['premium_range'] = '30%以下'
             #     idata['premium_integral'] = 20
             #
-            # 数据类型
-            idata["create_type"] = "import"
-
-            idata["update_time"] = dt.strftime('%Y-%m-%dT%H:%M:%S%z')
 
         idata["create_time"] = dt.strftime('%Y-%m-%dT%H:%M:%S%z')
         action = {
