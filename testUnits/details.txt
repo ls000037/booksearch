@@ -2,7 +2,8 @@
    "channel_type":"",
    "sale_time":[]
    }
-
+if isinstance(i[key], int):
+    print(i[key][:-3])
 
     [{"category":"文学"},{"category":"军事"},{"category":"政治"},{"category":"小说"},{"category":"体育"},{"category":"工程技术"},{"category": "社会文化"},{"category": "经济"},{"category": "法律"},{"category": "艺术"}]
 

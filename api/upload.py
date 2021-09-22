@@ -87,7 +87,7 @@ async def readfile(body):
                      "作者": "author", "书品": "shuppites", "开本": "format", "是否套装": "is_suit",
                      "套装数量": "suits", "装帧": "binding_layout", \
                      "页数": "pages", "纸张": "papers", "上传人员": "uploader",
-                     "获得版权月": "copyright_month", "多少店铺在售": "selling_stores",
+                     "获取版权月": "copyright_month", "多少店铺在售": "selling_stores",
                      "出版年限区间": "published_year_range", \
                      "出版年限积分": "published_year_integral", "评论数区间": "comments_range", "评论数积分": "comments_integral",
                      "溢价区间": "premium_range", \
@@ -130,16 +130,52 @@ async def open_verifyer(edata):
     for i in edata:
 
         for key in i:
-            if "统计月份" in key or "上架时间" in key:
+            if "统计月份" in key:
                 if i[key]:
-                    try:
-                        time.strptime(i[key], "%Y-%m")
-                        # time_new=time.strftime("%Y年%m月%d日", time_old)
-                        # print(time_new)
-                    except Exception as e:
-                        return json(
-                            {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
-                            ensure_ascii=False)
+                    # 验证统计月份时间戳
+                    if isinstance(i[key], int):
+                        try:
+                            timestamp = int(str(i[key])[:-3])
+
+                            timeArray = time.localtime(timestamp)
+                            time.strftime("%Y-%m", timeArray)
+                        except Exception:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
+                    else:
+                        try:
+                            time.strptime(i[key], "%Y-%m")
+                            # time_new=time.strftime("%Y年%m月%d日", time_old)
+                            # print(time_new)
+                        except Exception as e:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
+            if  "上架时间" in key:
+                if i[key]:
+                    if isinstance(i[key], int):
+                        try:
+                            timestamp = int(str(i[key])[:-3])
+
+                            timeArray = time.localtime(timestamp)
+                            time.strftime("%Y-%m-%d", timeArray)
+                        except Exception:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
+                    else:
+                        try:
+                            try:
+                                time.strptime(i[key], "%Y-%m-%d")
+                            except Exception:
+                                time.strptime(i[key], "%Y-%m")
+                            # time_new=time.strftime("%Y年%m月%d日", time_old)
+                            # print(time_new)
+                        except Exception as e:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
         count+=1
 
     return False
@@ -241,25 +277,36 @@ async def verifyer(edata):
             elif "出版时间" in key or "印刷时间" in key:
                 if i[key]:
                     # 判断日期格式是否正确
-                    try:
+                    if isinstance(i[key], int):
                         try:
-                            #     # timeArray = time.localtime(int(str(i[key])[:-3]))1
-                            #
-                            #     # print(time.strftime("%Y-%m-%d", timeArray))
+                            timestamp = int(str(i[key])[:-3])
 
-                            time.strptime(str(int(i[key])), "%Y")
-
+                            timeArray = time.localtime(timestamp)
+                            time.strftime("%Y-%m", timeArray)
                         except Exception:
-                            time.strptime(str(i[key]), "%Y-%m-%d")
-                        #     time.strptime(i[key], "%Y/%m/%d")1
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
+                    else:
+                        try:
+                            try:
 
-                        # time_new=time.strftime("%Y年%m月%d日", time_old)
-                        # print(time_new)
-                    except Exception as e:
-                        return json(
-                            {"code": 500,
-                             "msg": "第" + str(count) + "行数据，'" + key + "'格式为单独年份 ，请纠正后再上传!"},
-                            ensure_ascii=False)
+                                time.strptime(str(int(i[key])), "%Y")
+
+                            except Exception:
+                                try:
+                                    time.strptime(str(i[key]), "%Y-%m-%d")
+                                except Exception:
+                                    time.strptime(str(i[key]), "%Y-%m")
+                            #     time.strptime(i[key], "%Y/%m/%d")1
+
+                            # time_new=time.strftime("%Y年%m月%d日", time_old)
+                            # print(time_new)
+                        except Exception as e:
+                            return json(
+                                {"code": 500,
+                                 "msg": "第" + str(count) + "行数据，'" + key + "'格式为单独年份 ，请纠正后再上传!"},
+                                ensure_ascii=False)
 
                     # 此处判断可能多余 暂留
                     # if not isinstance(i[key], str):
@@ -274,14 +321,25 @@ async def verifyer(edata):
             # 获取版权月格式是否正确（必填）
             elif "获取版权月" in key:
                 if i[key]:
-                    try:
-                        time.strptime(i[key], "%Y-%m")
-                        # time_new=time.strftime("%Y年%m月%d日", time_old)
-                        # print(time_new)
-                    except Exception as e:
-                        return json(
-                            {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
-                            ensure_ascii=False)
+                    if isinstance(i[key], int):
+                        try:
+                            timestamp = int(str(i[key])[:-3])
+
+                            timeArray = time.localtime(timestamp)
+                            time.strftime("%Y-%m", timeArray)
+                        except Exception:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
+                    else:
+                        try:
+                            time.strptime(i[key], "%Y-%m")
+                            # time_new=time.strftime("%Y年%m月%d日", time_old)
+                            # print(time_new)
+                        except Exception as e:
+                            return json(
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                ensure_ascii=False)
                 else:
                     return json(
                         {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段为必填，当前为空值，请纠正后再上传!"},

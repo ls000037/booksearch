@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 from sanic.response import json
 from dateutil import tz
+import time
 tz_sh = tz.gettz('Asia/Shanghai')
 # 通过file载入json数据
 # def load_json_file(file):
@@ -110,6 +111,60 @@ def generate_actions(index, datas,sheet):
             idata['first_channel'] = '正向选品'
 
             idata['second_channel'] = '正向选品'
+            # 转换出版时间戳为正常格式
+            try:
+
+                if isinstance(idata['publishing_time'], int):
+
+                    timestamp = int(str(idata['publishing_time'])[:-3])
+
+                    timeArray = time.localtime(timestamp)
+                    idata['publishing_time'] = time.strftime("%Y-%m", timeArray)
+            except Exception as e:
+                print(e)
+            # 转换印刷时间戳为正常格式
+            try:
+
+                if isinstance(idata['printing_time'], int):
+
+                    timestamp = int(str(idata['printing_time'])[:-3])
+
+                    timeArray = time.localtime(timestamp)
+                    idata['printing_time'] = time.strftime("%Y-%m", timeArray)
+            except Exception as e:
+                print(e)
+            #转换获取出版月时间戳为正常格式
+            try:
+
+                if isinstance(idata['copyright_month'], int):
+                    timestamp = int(str(idata['copyright_month'])[:-3])
+
+                    timeArray = time.localtime(timestamp)
+                    idata['copyright_month'] = time.strftime("%Y-%m", timeArray)
+            except Exception as e:
+                print(e)
+      # 转换上架时间戳为正常格式
+        try:
+
+            if isinstance(idata['shelf_time'], int):
+                print(idata['shelf_time'])
+                timestamp = int(str(idata['shelf_time'])[:-3])
+
+                timeArray = time.localtime(timestamp)
+                idata['shelf_time'] = time.strftime("%Y-%m-%d", timeArray)
+        except Exception as e:
+            print(e)
+        # 转换统计月份戳为正常格式
+        try:
+
+            if isinstance(idata['statistical_month'], int):
+                print(idata['statistical_month'])
+                timestamp = int(str(idata['statistical_month'])[:-3])
+
+                timeArray = time.localtime(timestamp)
+                idata['statistical_month'] = time.strftime("%Y-%m", timeArray)
+        except Exception as e:
+            print(e)
 
             # idata['publishing_time'] = idata['publishing_time'].replace("/", "-")
             # idata['data_source']= None
