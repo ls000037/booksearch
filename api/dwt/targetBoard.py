@@ -20,7 +20,12 @@ async def channelDim(requset):
         type = data['type']
         #匹配渠道
         q_source = Q("term", **{"channel": source})
-        #匹配指标类型
+        #转换前端传来的下划线参数为字段所需格式
+        if type == "premium_categorys":
+            type= "premium-categorys"
+        elif type == "premium_product":
+            type = "premium-product"
+        # 匹配指标类型
         q_type = Q("term", **{"type": type})
         #查询创建时间为昨天的数据
         today = datetime.date.today()

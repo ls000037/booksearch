@@ -48,10 +48,10 @@ async def open_engine(data, page, size):
         q = q1 & q
     if q2:
         q = q & q2
-    print(q)
+    # print(q)
 
     es_results, total = query_es_return_list(open_search_index, q)
-    print(total)
+    # print(total)
     key_data = ["isbn", "book_name", "selling_price", "discount_rate", "author", "category",
                 "publishing_house", "month_sales", "year_sales", "total_sales", "book_list", "channel_type",
                 "sale_type",
@@ -85,7 +85,6 @@ async def open_engine(data, page, size):
 @protected
 async def opensearch(requset, pages: str):
     if requset.method == 'POST':
-        # print("getttt")
         if not pages:
             pages = '1&10'
         page = pages.split('&')[0]
@@ -95,12 +94,7 @@ async def opensearch(requset, pages: str):
         data = requset.json
 
         try:
-            #     pass
             results, total, uuid = await open_engine(data, int(page), int(size))
-            # # 测试
-            # # return json({"error": "take me"}, ensure_ascii=False)
-            # # results, total = get_results()
-
             return json({"code": 200, "msg": "查询成功", "data": results, "total": total, "uuid": uuid})
 
         except Exception as e:
