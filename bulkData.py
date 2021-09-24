@@ -53,20 +53,7 @@ def generate_actions(index, datas,sheet):
         #         idata['selling_stores_range']="3次以下"
         #         idata['selling_stores_integral']=15
 
-        # for i in ["store",
-        #           "store_comments", "isbn", "book_name", "category",
-        #           "slogan", "book_description", "languages" \
-        #         , "word_count", "book_comments", "store_pricing", "selling_price",
-        #           "publishing_house", "publishing_time", "printing_time",
-        #           "edition", "impression" \
-        #         , "inventory", "sales", "author", "shuppites", "format",
-        #           "is_suit", "suits", "binding_layout", "pages" \
-        #         , "papers", "uploader", "selling_stores",
-        #           "published_year_range", "published_year_integral",
-        #           "comments_range", "comments_integral", \
-        #           "premium_range", "premium_integral", "selling_stores_range",
-        #           "selling_stores_integral", "create_type", "data_source", "total_integral", 'sales_month',
-        #           "shelf_time"]:
+
         #     try:
         #         idata[i]
         #     except Exception:
@@ -76,6 +63,27 @@ def generate_actions(index, datas,sheet):
         # if sheet == "上架产品数据模型":
         #     pass
         if sheet == "正向选品数据":
+            for i in ["store",
+                      "store_comments", "isbn", "book_name", "category",
+                      "slogan", "book_description", "languages" \
+                    , "word_count", "book_comments", "store_pricing", "selling_price",
+                      "publishing_house", "publishing_time", "printing_time",
+                      "edition", "impression" \
+                    , "inventory", "sales", "author", "shuppites", "format",
+                      "is_suit", "suits", "binding_layout", "pages" \
+                    , "papers", "uploader", "selling_stores",
+                      "published_year_range", "published_year_integral",
+                      "comments_range", "comments_integral", \
+                      "premium_range", "premium_integral", "selling_stores_range",
+                      "selling_stores_integral", "create_type", "data_source", "total_integral", 'sales_month',
+                      "shelf_time"]:
+                # if idata[i] == None:
+                #     del idata[i]
+                try:
+                    if idata[i] == None:
+                        del idata[i]
+                except Exception:
+                    pass
             try:
                 if idata["author"]:
                     idata["author"] = idata["author"].replace('\n', ' ').replace('\r', '')
@@ -147,7 +155,16 @@ def generate_actions(index, datas,sheet):
             idata["create_type"] = "import"
 
             idata["update_time"] = dt.strftime('%Y-%m-%dT%H:%M:%S%z')
+
         if sheet == "上架产品数据" or sheet == "上架产品数据模板":
+            for i in ["channel","isbn","book_name","author","publishing_house","category","copyright_person","shelf_time"]:
+                # if idata[i] == None:
+                #     del idata[i]
+                try:
+                    if idata[i] == None:
+                        del idata[i]
+                except Exception:
+                    pass
         # 转换上架时间戳为正常格式
             try:
 
@@ -161,6 +178,14 @@ def generate_actions(index, datas,sheet):
                 print(e)
 
         if sheet == "产品动销情况" or sheet == "产品动销情况模板":
+            for i in ["statistical_month","category","sales"]:
+                # if idata[i] == None:
+                #     del idata[i]
+                try:
+                    if idata[i] == None:
+                        del idata[i]
+                except Exception:
+                    pass
         # 转换统计月份戳为正常格式产品动销情况
             try:
 
@@ -252,9 +277,9 @@ async def bulk_insert_data_to_es(elasticsearch_connection, data, index,sheet):
         for success, info in helpers.parallel_bulk(elasticsearch_connection, actions=generate_actions(index, data,sheet)):
             if not success:
                 print('文档插入失败信息: ', info)
-                return json({"code":500,"msg": "文档插入ES失败,请检查原因"}, ensure_ascii=False)
-        return json({"code":200,"msg": "解析文件成功"}, ensure_ascii=False)
+                return {"code":500,"msg": "sheet"+sheet+"文档插入ES失败,请检查原因"}
+        return {"code":200,"msg": "解析文件成功"}
     except Exception as e:
         e = sys.exc_info()
         print("bulk插入失败信息: ", e)
-        return json({"code":500,"msg": "文档actions生成失败，请检查excel列名或内容是否规范"}, ensure_ascii=False)
+        return {"code":500,"msg": "sheet"+sheet+"文档actions生成失败，请检查excel列名或内容是否规范"}

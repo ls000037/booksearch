@@ -30,38 +30,7 @@ index = search_index
 
 
 # 解析上传的excel文件
-async def readfile(body):
-    # 判断sheet1
-    try:
-        try:
-            pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="正向选品数据模板")
-        except Exception:
-            pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="正向选品数据")
-    except Exception as e:
-        print(e)
-        return json({"code": 500, "msg": "解析失败，读取 sheet--正向选品数据 错误，检查sheet是否存在"}, ensure_ascii=False)
-
-    # 判断sheet2
-    try:
-        try:
-            on_pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="上架产品数据模板")
-        except Exception:
-            on_pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="上架产品数据")
-
-    except Exception as e:
-        print(e)
-        return json({"code": 500, "msg": "解析失败，读取 sheet--上架产品数据 错误，检查sheet是否存在"}, ensure_ascii=False)
-
-    # 判断sheet3
-    try:
-        try:
-            sale_pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="产品动销情况")
-        except Exception:
-            sale_pd_data = pd.read_excel(body, engine="openpyxl", sheet_name="产品动销情况模板")
-
-    except Exception as e:
-        print(e)
-        return json({"code": 500, "msg": "解析失败，读取 sheet--产品动销情况 错误，检查sheet是否存在"}, ensure_ascii=False)
+async def readfile(pd_data, on_pd_data, sale_pd_data):
 
     try:
 
@@ -106,9 +75,19 @@ async def readfile(body):
         data = pd_data.to_json(orient='records', force_ascii=False)
         on_data = on_pd_data.to_json(orient='records', force_ascii=False)
         sale_data = sale_pd_data.to_json(orient='records', force_ascii=False)
-        await bulk_insert_data_to_es(es_con, js.loads(data), index, "正向选品数据")
-        await bulk_insert_data_to_es(es_con, js.loads(on_data), on_index, "上架产品数据")
-        await bulk_insert_data_to_es(es_con, js.loads(sale_data), sale_index, "产品动销情况")
+
+        result = await bulk_insert_data_to_es(es_con, js.loads(data), index, "正向选品数据")
+        if result['code'] == 500:
+            return json({"code": 500, "msg": result['msg']}, ensure_ascii=False)
+
+        result = await bulk_insert_data_to_es(es_con, js.loads(on_data), on_index, "上架产品数据")
+        if result['code'] == 500:
+            return json({"code": 500, "msg": result['msg']}, ensure_ascii=False)
+
+        result = await bulk_insert_data_to_es(es_con, js.loads(sale_data), sale_index, "产品动销情况")
+        if result['code'] == 500:
+            return json({"code": 500, "msg": result['msg']}, ensure_ascii=False)
+
         return json({"code": 200, "msg": "解析成功"}, ensure_ascii=False)
     except Exception as e:
         print(e)
@@ -152,7 +131,7 @@ async def open_verifyer(edata):
                             return json(
                                 {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
                                 ensure_ascii=False)
-            if  "上架时间" in key:
+            if "上架时间" in key:
                 if i[key]:
                     if isinstance(i[key], int):
                         try:
@@ -162,7 +141,8 @@ async def open_verifyer(edata):
                             time.strftime("%Y-%m-%d", timeArray)
                         except Exception:
                             return json(
-                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01)，请纠正后再上传!"},
+                                {"code": 500,
+                                 "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01)，请纠正后再上传!"},
                                 ensure_ascii=False)
                     else:
                         try:
@@ -174,11 +154,13 @@ async def open_verifyer(edata):
                             # print(time_new)
                         except Exception as e:
                             return json(
-                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01或2020-01)，请纠正后再上传!"},
+                                {"code": 500,
+                                 "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01-01或2020-01)，请纠正后再上传!"},
                                 ensure_ascii=False)
-        count+=1
+        count += 1
 
     return False
+
 
 # 判断格式
 async def verifyer(edata):
@@ -219,12 +201,12 @@ async def verifyer(edata):
             #             # if not isinstance(str(i[key]), str):
             #             return json({"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'字段不符合格式，请纠正后再上传!"},
             #                         ensure_ascii=False)
-                    # 利用每个isbn搜索书籍对应的书店数量信息，备用
-                    # ms=ms.add(Search().filter('match_phrase', isbn=i["ISBN"]))
-                # else:
-                #     return json(
-                #         {"code": 500, "msg": "第" + str(count) + "行（包括表头）数据，'" + key + "'字段为空值，请纠正后再上传!"},
-                #         ensure_ascii=False)
+            # 利用每个isbn搜索书籍对应的书店数量信息，备用
+            # ms=ms.add(Search().filter('match_phrase', isbn=i["ISBN"]))
+            # else:
+            #     return json(
+            #         {"code": 500, "msg": "第" + str(count) + "行（包括表头）数据，'" + key + "'字段为空值，请纠正后再上传!"},
+            #         ensure_ascii=False)
 
             # # 整数类型判断（必填项）
             # elif "版本" in key or "印次" in key:
@@ -277,7 +259,7 @@ async def verifyer(edata):
             # 出版时间印刷时间是否正确（非必填）
             elif "出版时间" in key or "印刷时间" in key:
                 if i[key]:
-                    # 判断日期格式是否正确
+                    # 转换excel中得时间戳日期为正常格式
                     if isinstance(i[key], int):
                         try:
                             timestamp = int(str(i[key])[:-3])
@@ -286,7 +268,7 @@ async def verifyer(edata):
                             time.strftime("%Y-%m", timeArray)
                         except Exception:
                             return json(
-                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'格式需符合(eg. 2020-01)，请纠正后再上传!"},
+                                {"code": 500, "msg": "第" + str(count) + "行数据，'" + key + "'需符合日期格式(2020或2020-01或2020-01-01)，请纠正后再上传!"},
                                 ensure_ascii=False)
                     else:
                         try:
@@ -306,7 +288,7 @@ async def verifyer(edata):
                         except Exception as e:
                             return json(
                                 {"code": 500,
-                                 "msg": "第" + str(count) + "行数据，'" + key + "'格式为单独年份 ，请纠正后再上传!"},
+                                 "msg": "第" + str(count) + "行数据，'" + key + "'需符合日期格式(2020或2020-01或2020-01-01) ，请纠正后再上传!"},
                                 ensure_ascii=False)
 
                     # 此处判断可能多余 暂留
@@ -369,9 +351,9 @@ async def upload(requset):
         # filename = filename.split('.')[0] + "_" + nowtime + "." + filename.split('.')[1]
         # upload_path = os.path.join(basepath, '../static', filename)
 
-        # 读取文件流
+        # 读取"正向选品数据"
         try:
-            ex_data = pd.read_excel(f.body, engine="openpyxl")
+            ex_data = pd.read_excel(f.body, engine="openpyxl", sheet_name="正向选品数据")
 
             # 判断是否确实必填列
             # cloumn=['图书名称',"图书名称（必填）",'定价','售价','定价（必填，最多俩位小数）',"售价（必填，最多俩位小数）","上传人员","获取版权月"]
@@ -389,36 +371,34 @@ async def upload(requset):
                             ensure_ascii=False)
 
             edata = ex_data.to_json(orient='records', force_ascii=False)
+            # 验证格式是否正确，不正确返回重新上传
+            verify = await verifyer(js.loads(edata))
+            if verify:
+                return verify
 
         except Exception as e:
-            return json({"code": 500, "msg": "读取文件失败，请检查原因"}, ensure_ascii=False)
-
+            return json({"code": 500, "msg": "读取sheet<正向选品数据>失败，请检查sheet是否存在或格式错误"}, ensure_ascii=False)
+        #读取"上架产品数据"
         try:
-            o_edata = pd.read_excel(f.body, engine="openpyxl", sheet_name="上架产品数据").to_json(orient='records', force_ascii=False)
+            ox_data = pd.read_excel(f.body, engine="openpyxl", sheet_name="上架产品数据")
+            o_data = ox_data.to_json(orient='records', force_ascii=False)
+            on_verify = await open_verifyer(js.loads(o_data))
+            if on_verify:
+                return on_verify
         except Exception as e:
-            return json({"code": 500, "msg": "读取 sheet--上架产品数据 失败，请检查格式是否正确"}, ensure_ascii=False)
-
-
+            return json({"code": 500, "msg": "读取 sheet<上架产品数据>失败，请检查sheet是否存在或格式错误"}, ensure_ascii=False)
+        #读取"产品动销情况"
         try:
-            s_edata = pd.read_excel(f.body, engine="openpyxl", sheet_name="上架产品数据").to_json(orient='records', force_ascii=False)
+            sx_data = pd.read_excel(f.body, engine="openpyxl", sheet_name="产品动销情况")
+            s_data = sx_data.to_json(orient='records',force_ascii=False)
+            sale_verify = await open_verifyer(js.loads(s_data))
+            if sale_verify:
+                return sale_verify
         except Exception as e:
-            return json({"code": 500, "msg": "读取 sheet--上架产品数据 失败，请检查格式是否正确"}, ensure_ascii=False)
+            return json({"code": 500, "msg": "读取 sheet<产品动销情况>失败，请检查sheet是否存在或格式错误"}, ensure_ascii=False)
         # print(js.loads(edata)) ,sheet_name='A
 
-        # 验证格式是否正确，不正确返回重新上传
-        verify = await verifyer(js.loads(edata))
-        if verify:
-            return verify
-
-        on_verify = await open_verifyer(js.loads(o_edata))
-        if on_verify:
-            return on_verify
-
-        sale_verify = await open_verifyer(js.loads(s_edata))
-        if sale_verify:
-            return sale_verify
-
-        return await readfile(f.body)
+        return await readfile(ex_data, ox_data, sx_data)
 
         # 获取当前request的loop,添加后台非阻塞任务
         # myLoop = requset.app.loop
