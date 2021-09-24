@@ -1,15 +1,15 @@
 from sanic import Blueprint
-from searchEngine import sort_es_return_list, query_es_return_list
+from searchEngine import query_es_return_list
 from sanic.response import json
 from elasticsearch_dsl import Q
 from auth import protected
-from sanic.response import text
-from bookIndexs import dwt_channel, dwt_category, dwt_sales, dwt_copyright
+from bookIndexs import dwt_channel, dwt_category, dwt_sales, dwt_copyright,dwt_copyright_info
 import datetime
 
 targetBoard_bp = Blueprint('targetBoard_bp')
 
-#获取渠道维度指标
+
+# 获取渠道维度指标
 @targetBoard_bp.route('/channel-dim-detail', methods=["POST"])
 @protected
 async def channelDim(requset):
@@ -18,16 +18,16 @@ async def channelDim(requset):
         data = requset.json
         source = source_map[data['channel']]
         type = data['type']
-        #匹配渠道
+        # 匹配渠道
         q_source = Q("term", **{"channel": source})
-        #转换前端传来的下划线参数为字段所需格式
+        # 转换前端传来的下划线参数为字段所需格式
         if type == "premium_categorys":
-            type= "premium-categorys"
+            type = "premium-categorys"
         elif type == "premium_product":
             type = "premium-product"
         # 匹配指标类型
         q_type = Q("term", **{"type": type})
-        #查询创建时间为昨天的数据
+        # 查询创建时间为昨天的数据
         today = datetime.date.today()
         oneday = datetime.timedelta(days=1)
         yesterday = today - oneday
@@ -43,7 +43,8 @@ async def channelDim(requset):
             print(e)
             return json({"code": 500, "msg": "查询渠道维度指标错误"}, ensure_ascii=False)
 
-#获取销量趋势
+
+# 获取销量趋势
 @targetBoard_bp.route('/sales-trend', methods=["POST"])
 @protected
 async def salesTrend(requset):
@@ -54,6 +55,8 @@ async def salesTrend(requset):
         categorys = data['categorys']
         years = data['years']
         q_source = Q("term", **{"channel": source})
+        month = data['months']
+        q_month = Q("term", **{"month": month})
 
         q_category = []
         for category in categorys:
@@ -61,7 +64,7 @@ async def salesTrend(requset):
                 q_category = q_category | Q("term", **{"product_type": category})
             else:
                 q_category = Q("term", **{"product_type": category})
-
+        #年份多选构造
         q_year = []
         for year in years:
             if q_year:
@@ -74,7 +77,7 @@ async def salesTrend(requset):
         yesterday = today - oneday
         q_range = Q('range', **{"create_time": {'gte': yesterday, 'lte': yesterday}})
         try:
-            results, total = query_es_return_list(dwt_sales, q_source & q_category & q_year & q_range)
+            results, total = query_es_return_list(dwt_sales, q_source & q_category & q_year & q_month & q_range)
             trends = []
             for idata in results:
                 trends.append({"channel": idata.channel, "product_type": idata.product_type, "year": idata.year,
@@ -85,7 +88,7 @@ async def salesTrend(requset):
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
 
 
-#获取业务员版权数量排名
+# 获取业务员版权数量排名
 @targetBoard_bp.route('/copyrights', methods=["POST"])
 @protected
 async def copyrights(requset):
@@ -103,8 +106,32 @@ async def copyrights(requset):
             results, total = query_es_return_list(dwt_copyright, q_month & q_year & q_range)
             copyrights = []
             for idata in results:
-                copyrights.append({"year": idata.year, "month": idata.month, "copyright_person": idata.copyright_person,
-                                   "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num,
+                copyrights.append({"year": idata.year, "month": idata.month, "uploader": idata.copyright_person,
+                                   "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num})
+            return json({"code": 200, "msg": "查询成功", "data": copyrights, "total": total})
+        except Exception as e:
+            print(e)
+            return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
+
+# 获取业务员版权数量排名
+@targetBoard_bp.route('/copyrights-info', methods=["POST"])
+@protected
+async def copyrightsInfo(requset):
+    if requset.method == 'POST':
+        data = requset.json
+        year = data['year']
+        month = data['month']
+        q_year = Q("term", **{"year": year})
+        q_month = Q("term", **{"month": month})
+        today = datetime.date.today()
+        oneday = datetime.timedelta(days=1)
+        yesterday = today - oneday
+        q_range = Q('range', **{"create_time": {'gte': yesterday, 'lte': yesterday}})
+        try:
+            results, total = query_es_return_list(dwt_copyright_info, q_month & q_year & q_range)
+            copyrights = []
+            for idata in results:
+                copyrights.append({"year": idata.year, "month": idata.month,
                                    "total_copyright_num": idata.total_copyright_num,
                                    "total_shelf_num": idata.total_shelf_num, "total_sales": idata.total_sales})
             return json({"code": 200, "msg": "查询成功", "data": copyrights, "total": total})
@@ -112,7 +139,7 @@ async def copyrights(requset):
             print(e)
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
 
-#获取类别明细
+# 获取类别明细
 @targetBoard_bp.route('/categorys-detail', methods=["POST"])
 @protected
 async def categoryDetail(requset):

@@ -42,9 +42,6 @@ async def search(requset):
         data = requset.json
         try:
             results, total, uuid = await get_results(data, index, page, size)
-            # 测试
-            # return json({"error": "take me"}, ensure_ascii=False)
-            # results, total = get_results()
             return json({"code": 200, "msg": "查询成功", "data": results, "total": total, "uuid": uuid})
         except Exception as e:
             print("查询失败", e)
@@ -55,21 +52,17 @@ async def search(requset):
 
 
 # #查询所有结果
-@search_bp.route('/search/all', methods=['POST'])
-@protected
-async def search(requset):
-    if requset.method == 'POST':
-        page = 0
-        size = 0
-        data = requset.json
-        try:
-
-            results, total, uuid = await get_results(data, index, page, size)
-            # 测试
-            # return json({"error": "take me"}, ensure_ascii=False)
-            # results, total = get_results()
-            return json({"code": 200, "msg": "查询成功", "data": results, "total": total, "uuid": uuid})
-        except Exception as e:
-            print("查询失败", e)
-            return json({"code": 500, "msg": "查询失败", "err_info": e})
-    return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
+# @search_bp.route('/search/all', methods=['POST'])
+# @protected
+# async def search(requset):
+#     if requset.method == 'POST':
+#         page = 0
+#         size = 0
+#         data = requset.json
+#         try:
+#             results, total, uuid = await get_results(data, index, page, size)
+#             return json({"code": 200, "msg": "查询成功", "data": results, "total": total, "uuid": uuid})
+#         except Exception as e:
+#             print("查询失败", e)
+#             return json({"code": 500, "msg": "查询失败", "err_info": e})
+#     return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)

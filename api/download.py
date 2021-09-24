@@ -11,6 +11,8 @@ from sanic.response import file_stream
 import itertools
 import pandas as pd
 from auth import protected
+from datatable import dt, f
+
 download_bp = Blueprint('download_bp')
 
 
@@ -71,9 +73,8 @@ async def download_results(uuid, postdatas, index):
           must_not=blocklist
           )
 
-
     results, total = query_es_return_list(index, q)
-    results = itertools.islice(results, 0, 50000)
+    # results = itertools.islice(results, 0, 50000)
     print(total)
     if total > 300000:
         return ([], total)
@@ -93,59 +94,96 @@ async def download_results(uuid, postdatas, index):
     await redis.set("status_" + str(uuid), "generating")
     await redis.expire("status_" + str(uuid), 3600)
 
-    df = pd.DataFrame((handle_doc(d.to_dict(), index) for d in results))
-
-    #生成开卷数据
-    if index =="ods_openbooks":
+    # df = pd.DataFrame((handle_doc(d.to_dict(), index) for d in results))
+    # datatable方式读文件  8个逻辑cpu使用8个线程，暂不知随着cpu线程数提升，性能会提升多少
+    dt.options.nthreads = 8
+    dict_data = [handle_doc(d.to_dict(), index) for d in results]
+    df = dt.Frame(dict_data)
+    # 生成开卷数据
+    if index == "ods_openbooks":
+        # datatable方式写文件
         try:
-            df.drop(['acquisition_time'], axis=1, inplace=True)
-        except Exception:
-            pass
-        try:
-            df.drop(['acquisition_timestamp'], axis=1, inplace=True)
-        except Exception:
-            pass
-        df.rename(
-            columns={"isbn": "ISBN", "book_name": "书名", "selling_price": "售价", "discount_rate": "折扣", "author": "作者",
-                     "category": "分类", "publishing_house": "出版社", "month_sales": "月销量", "year_sales": "年销量",
-                     "total_sales": "累积销量", "book_list": "图书榜单", "channel_type": "渠道类型", "sale_type": "销售类型",
-                     "sale_time": "销售时间"}, inplace=True)
+            df = dt[:, f[:].remove([f.acquisition_time, f.acquisition_timestamp])]
+        except Exception as e:
+            print(e)
+        df.names = {"isbn": "ISBN", "book_name": "书名", "selling_price": "售价", "discount_rate": "折扣", "author": "作者",
+                    "category": "分类", "publishing_house": "出版社", "month_sales": "月销量", "year_sales": "年销量",
+                    "total_sales": "累积销量", "book_list": "图书榜单", "channel_type": "渠道类型", "sale_type": "销售类型",
+                    "sale_time": "销售时间"}
+        # try:
+        #     df.drop(['acquisition_time'], axis=1, inplace=True)
+        # except Exception:
+        #     pass
+        # try:
+        #     df.drop(['acquisition_timestamp'], axis=1, inplace=True)
+        # except Exception:
+        #     pass
+        #
+        # df.rename(
+        #     columns={"isbn": "ISBN", "book_name": "书名", "selling_price": "售价", "discount_rate": "折扣", "author": "作者",
+        #              "category": "分类", "publishing_house": "出版社", "month_sales": "月销量", "year_sales": "年销量",
+        #              "total_sales": "累积销量", "book_list": "图书榜单", "channel_type": "渠道类型", "sale_type": "销售类型",
+        #              "sale_time": "销售时间"}, inplace=True)
 
-    #生成全文检索数据
+    # 生成全文检索数据
     else:
+        # datatable方式写文件
         try:
-            df.drop(['data_source'], axis=1, inplace=True)
-
-        except Exception:
-            pass
-        # 去除图书目录字段acquisition_timestamp
-        try:
-            df.drop(['catalogue'], axis=1, inplace=True)
-        except Exception:
-            pass
-        df.rename(columns={"first_channel": "一级渠道", "second_channel": "二级渠道", "store": "店铺", "store_comments": "店铺评论数",
-                           "isbn": "ISBN", "book_name": "图书名称", "category": "分类", "slogan": "广告语",
-                           "book_description": "图书简介", "languages": "语种", "word_count": "字数", "book_comments": "书评论数",
-                           "store_pricing": "定价", "selling_price": "售价", "publishing_house": "出版社",
-                           "create_type": "创建类型",
-                           "publishing_time": "出版时间", "printing_time": "印刷时间", "sales_month": "销售月份",
-                           "shelf_time": "上架时间",
-                           "edition": "版本", "impression": "印次", "inventory": "库存", "sales": "销量", "author": "作者",
-                           "shuppites": "书品", "format": "开本", "is_suit": "是否套装", "suits": "套装数量",
-                           "binding_layout": "装帧",
-                           "pages": "页数", "papers": "纸张", "uploader": "上传人员", "selling_stores": "多少店铺在售",
-                           "published_year_range": "出版年限区间", "published_year_integral": "出版年限积分",
-                           "comments_range": "评论数区间",
-                           "comments_integral": "评论数积分", "premium_range": "溢价区间", "premium_integral": "溢价积分",
-                           "selling_stores_range": "在售商家数区间", "selling_stores_integral": "在售商家数积分",
-                           "total_integral": "总积分",
-                           "create_time": "创建时间", "update_time": "更新时间"}, inplace=True)
+            df = dt[:, f[:].remove([f.data_source, f.catalogue])]
+        except Exception as e:
+            print(e)
+        df.names = {"first_channel": "一级渠道", "second_channel": "二级渠道", "store": "店铺", "store_comments": "店铺评论数",
+                    "isbn": "ISBN", "book_name": "图书名称", "category": "分类", "slogan": "广告语",
+                    "book_description": "图书简介", "languages": "语种", "word_count": "字数", "book_comments": "书评论数",
+                    "store_pricing": "定价", "selling_price": "售价", "publishing_house": "出版社",
+                    "create_type": "创建类型",
+                    "publishing_time": "出版时间", "printing_time": "印刷时间", "sales_month": "销售月份",
+                    "shelf_time": "上架时间",
+                    "edition": "版本", "impression": "印次", "inventory": "库存", "sales": "销量", "author": "作者",
+                    "shuppites": "书品", "format": "开本", "is_suit": "是否套装", "suits": "套装数量",
+                    "binding_layout": "装帧",
+                    "pages": "页数", "papers": "纸张", "uploader": "上传人员", "selling_stores": "多少店铺在售",
+                    "published_year_range": "出版年限区间", "published_year_integral": "出版年限积分",
+                    "comments_range": "评论数区间",
+                    "comments_integral": "评论数积分", "premium_range": "溢价区间", "premium_integral": "溢价积分",
+                    "selling_stores_range": "在售商家数区间", "selling_stores_integral": "在售商家数积分",
+                    "total_integral": "总积分",
+                    "create_time": "创建时间", "update_time": "更新时间"}
+        # try:
+        #     df.drop(['data_source'], axis=1, inplace=True)
+        #
+        # except Exception:
+        #     pass
+        # # 去除图书目录字段acquisition_timestamp
+        # try:
+        #     df.drop(['catalogue'], axis=1, inplace=True)
+        # except Exception:
+        #     pass
+        #
+        # df.rename(columns={"first_channel": "一级渠道", "second_channel": "二级渠道", "store": "店铺", "store_comments": "店铺评论数",
+        #                    "isbn": "ISBN", "book_name": "图书名称", "category": "分类", "slogan": "广告语",
+        #                    "book_description": "图书简介", "languages": "语种", "word_count": "字数", "book_comments": "书评论数",
+        #                    "store_pricing": "定价", "selling_price": "售价", "publishing_house": "出版社",
+        #                    "create_type": "创建类型",
+        #                    "publishing_time": "出版时间", "printing_time": "印刷时间", "sales_month": "销售月份",
+        #                    "shelf_time": "上架时间",
+        #                    "edition": "版本", "impression": "印次", "inventory": "库存", "sales": "销量", "author": "作者",
+        #                    "shuppites": "书品", "format": "开本", "is_suit": "是否套装", "suits": "套装数量",
+        #                    "binding_layout": "装帧",
+        #                    "pages": "页数", "papers": "纸张", "uploader": "上传人员", "selling_stores": "多少店铺在售",
+        #                    "published_year_range": "出版年限区间", "published_year_integral": "出版年限积分",
+        #                    "comments_range": "评论数区间",
+        #                    "comments_integral": "评论数积分", "premium_range": "溢价区间", "premium_integral": "溢价积分",
+        #                    "selling_stores_range": "在售商家数区间", "selling_stores_integral": "在售商家数积分",
+        #                    "total_integral": "总积分",
+        #                    "create_time": "创建时间", "update_time": "更新时间"}, inplace=True)
     # print(df)
     # i = 1
-    #写入文件
+    # 写入文件
     try:
-        df.to_csv(download_path, index=False, encoding='utf-8-sig')
-
+        # df.to_csv(download_path, index=False, encoding='utf-8-sig')
+        # datatable方式写如csv
+        df.to_csv(download_path, bom=True)
         # for res in results:
         #     # 分割文件
         #     # if (i % 50001) == 0:
@@ -299,10 +337,11 @@ async def obdownload(requset, uuid):
             return await file_stream(
                 file_path,
 
-                mime_type="application/metalink4+xml",
+                # mime_type="application/metalink4+xml",
                 headers={
                     "Content-Disposition": 'Attachment; filename=' + file_name,
-                    "Content-Type": "application/metalink4+xml",
+                    # "Content-Type": "application/metalink4+xml",
+
                 },
             )
         except Exception as e:
@@ -311,7 +350,7 @@ async def obdownload(requset, uuid):
     return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
 
 
-# #验证下载状态是否超时12
+# #验证下载状态是否超时
 @download_bp.route('/verify/<uuid:str>', methods=['GET'])
 @protected
 async def uuid_verify(requset, uuid: str):
@@ -323,4 +362,3 @@ async def uuid_verify(requset, uuid: str):
             return json({"code": 500, "msg": "下载状态超时，请重新检索"})
         return json({"code": 200, "msg": "下载状态正常"})
     return json({"code": 500, "msg": "请求方法不允许"}, ensure_ascii=False)
-

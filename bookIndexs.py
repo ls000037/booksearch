@@ -12,5 +12,7 @@ dwt_channel = "dwt_channel_dim_metric_detail"
 dwt_sales = "dwt_sales_trend"
 # 业务员获取版权数排名
 dwt_copyright = "dwt_copyrights_topn"
+#业务员总销量，总版权数
+dwt_copyright_info="dwt_copyrights_info"
 # 产品类目明细
 dwt_category = "dwt_categorys_detail"

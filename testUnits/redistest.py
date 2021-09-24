@@ -27,13 +27,20 @@ app=Sanic(name="redistest")
 async def get_redis_pool():
     return (await aioredis.from_url("redis://localhost",decode_responses=True))
     # redis=await aioredis.from_url("redis://localhost",decode_responses=True)
-
+async def test1():
+    print("111")
+    return "111"
 
 @app.route("/redis")
 async def test(request):
+    myLoop = request.app.loop
+    # try:
+    task=myLoop.create_task(test1())
+    print("task",task)
+    return json({"data":task})
     # redis = await get_redis_pool()
     # status = await redis.get("status_" + '07040bd5145411ecb495005056bec555')
-    return text('07040bd5145411ecb495005056bec5551')
+    # return text('07040bd5145411ecb495005056bec5551')
     # print("status", status)
 
 @app.route('/category', methods=["GET"])

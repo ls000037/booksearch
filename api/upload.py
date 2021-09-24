@@ -352,7 +352,7 @@ async def verifyer(edata):
 
 
 # 上传文件接口
-@upload_bp.route('/upload', methods=['POST', "GET", 'OPTIONS'])
+@upload_bp.route('/upload', methods=['POST'])
 @protected
 async def upload(requset):
     if requset.method == 'POST':
@@ -422,7 +422,7 @@ async def upload(requset):
 
         # 获取当前request的loop,添加后台非阻塞任务
         # myLoop = requset.app.loop
-        # try:
+        # # try:
         # myLoop.create_task(savefile(f.body, upload_path))
         # await myLoop.create_task(readfile(f.body))
         # return json({"msg": "上传成功"}, ensure_ascii=False)
@@ -431,19 +431,19 @@ async def upload(requset):
 
         # return redirect(requset.app.url_for('upload_bp.upload'))
     # html_path = os.path.join('../templates', filename)
-    return html('''
-                <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>Title</title>
-            </head>
-            <body>
-            <h1>文件上传</h1>
-            <form action="" enctype="multipart/form-data" method="POST">
-                <input type="file" name="file">
-                <input type="submit" value="上传">
-            </form>
-            </body>
-            </html>
-            ''')
+    # return html('''
+    #             <!DOCTYPE html>
+    #         <html lang="en">
+    #         <head>
+    #             <meta charset="UTF-8">
+    #             <title>Title</title>
+    #         </head>
+    #         <body>
+    #         <h1>文件上传</h1>
+    #         <form action="" enctype="multipart/form-data" method="POST">
+    #             <input type="file" name="file">
+    #             <input type="submit" value="上传">
+    #         </form>
+    #         </body>
+    #         </html>
+    #         ''')
