@@ -24,9 +24,9 @@ session = Session()
 
 @app.listener('before_server_start')
 async def server_init(app, loop):
-    app.redis = await aioredis.from_url("redis://localhost")
-    # init extensions fabrics
-    session.init_app(app, interface=AIORedisSessionInterface(app.redis, expiry=3600))
+    # app.redis = await aioredis.from_url("redis://localhost")
+    # # init extensions fabrics
+    # session.init_app(app, interface=AIORedisSessionInterface(app.redis, expiry=3600))
     # 初始化mongodb
     commons.db = AsyncIOMotorClient("127.0.0.1", 27017)
 

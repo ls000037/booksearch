@@ -80,10 +80,16 @@ def generate_actions(index, datas,sheet):
                 # if idata[i] == None:
                 #     del idata[i]
                 try:
+
                     if idata[i] == None:
                         del idata[i]
                 except Exception:
                     pass
+            try:
+                if not idata["sales"]:
+                    idata["sales"] = 0
+            except Exception:
+                idata["sales"] = 0
             try:
                 if idata["author"]:
                     idata["author"] = idata["author"].replace('\n', ' ').replace('\r', '')
