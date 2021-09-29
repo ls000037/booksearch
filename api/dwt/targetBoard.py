@@ -12,7 +12,8 @@ targetBoard_bp = Blueprint('targetBoard_bp')
 today = datetime.date.today()
 oneday = datetime.timedelta(days=1)
 yesterday = today - oneday
-q_range = Q('term', **{"create_time": "2021-09-26"})
+q_range = Q('term', **{"create_time": yesterday})
+
 
 # 获取渠道维度指标
 @targetBoard_bp.route('/channel-dim-detail', methods=["POST"])
@@ -32,7 +33,7 @@ async def channelDim(requset):
             type = "premium-product"
         # 匹配指标类型
         q_type = Q("term", **{"metric_type": type})
-
+        q_range = Q('term', **{"create_time": "2021-09-26"})
         if data['type'] == "resources":
             # q_all = q_range & q_type
             q_all = q_range & q_type
@@ -77,7 +78,6 @@ async def salesTrend(requset):
             else:
                 q_year = Q("term", **{"year": year})
 
-
         if categorys[0] == "all":
             q_all = q_source & q_year & q_range
         else:
@@ -85,6 +85,7 @@ async def salesTrend(requset):
 
         try:
             results, total = query_es_return_list(dwt_sales, q_all)
+
             trends = []
 
             i = 0
@@ -100,7 +101,7 @@ async def salesTrend(requset):
                     #     trends.append(temp_dict)
                     #
                     # else:
-                        # 判断是否有可以汇总的数据
+                    # 判断是否有可以汇总的数据
                     ikey = True
                     for itemp in trends:
                         if idata.channel == itemp["channel"] and idata.year == itemp["year"] and idata.month == \
@@ -111,7 +112,6 @@ async def salesTrend(requset):
                             break
                     # 如果没有则新添加一条数据
                     if ikey:
-
                         temp_dict = {"channel": idata.channel, "product_type": 'all', "year": idata.year,
                                      "month": idata.month,
                                      "value": idata.value, "index": i}
@@ -130,14 +130,11 @@ async def salesTrend(requset):
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
 
 
-# 获取销量趋势---出版社信息
+# 获取销量趋势---类别信息
 @targetBoard_bp.route('/categorys', methods=["GET"])
 @protected
 async def publishers(requset):
     if requset.method == 'GET':
-
-
-
         try:
             results, total = query_es_return_list(dwt_sales, q_range)
             productTypes = []
@@ -176,10 +173,12 @@ async def copyrights(requset):
         try:
             results, total = query_es_return_list(dwt_copyright, q_all)
             copyrights = []
-            temp_dict = {}
+            # temp_dict = {}
             i = 0
             for idata in results:
-
+                temp_dict = {"year": idata.year, "month": idata.month, "copyright_person": idata.copyright_person,
+                             "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
+                copyrights.append(temp_dict)
                 # 如果为字典为空，则添加第一条数据
                 # if not temp_dict:
                 #     if year != 'all' and month != 'all':
@@ -200,47 +199,48 @@ async def copyrights(requset):
                 #                      "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
                 #     copyrights.append(temp_dict)
                 # else:
-                    # 判断是否有可以汇总的数据
-                ikey = True
-                for itemp in copyrights:
-                    if idata.copyright_person == itemp["copyright_person"]:
-                        itemp['copyright_num'] = itemp['copyright_num'] + idata.copyright_num
-                        itemp['shelf_num'] = itemp['shelf_num'] + idata.shelf_num
-                        copyrights[itemp['index']] = itemp
-                        ikey = False
-                        break
+                # 判断是否有可以汇总的数据
+                # ikey = True
+                # for itemp in copyrights:
+                #     if idata.copyright_person == itemp["copyright_person"]:
+                #         itemp['copyright_num'] = itemp['copyright_num'] + idata.copyright_num
+                #         itemp['shelf_num'] = itemp['shelf_num'] + idata.shelf_num
+                #         copyrights[itemp['index']] = itemp
+                #         ikey = False
+                #         break
                 # 如果没有则新添加一条数据
-                if ikey:
+                # if ikey:
+                #
+                #     if year != 'all' and month != 'all':
+                #         temp_dict = {"year": idata.year, "month": idata.month, "copyright_person": idata.copyright_person,
+                #      "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
+                #     if year == "all" and month == 'all':
+                #         temp_dict = {"year": "all", "month": "all",
+                #                            "copyright_person": idata.copyright_person,
+                #      "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
+                #     if year == "all" and month != 'all':
+                #         temp_dict = {"year": "all", "month": month,
+                #                            "copyright_person": idata.copyright_person,
+                #                            "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
+                #     if year != 'all' and month == 'all':
+                #         temp_dict = {"year": year, "month": "all",
+                #                            "copyright_person": idata.copyright_person,
+                #                            "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
+                #     i += 1
+                #     copyrights.append(temp_dict)
 
-                    if year != 'all' and month != 'all':
-                        temp_dict = {"year": idata.year, "month": idata.month, "copyright_person": idata.copyright_person,
-                     "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
-                    if year == "all" and month == 'all':
-                        temp_dict = {"year": "all", "month": "all",
-                                           "copyright_person": idata.copyright_person,
-                     "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
-                    if year == "all" and month != 'all':
-                        temp_dict = {"year": "all", "month": month,
-                                           "copyright_person": idata.copyright_person,
-                                           "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
-                    if year != 'all' and month == 'all':
-                        temp_dict = {"year": year, "month": "all",
-                                           "copyright_person": idata.copyright_person,
-                                           "copyright_num": idata.copyright_num, "shelf_num": idata.shelf_num, "index": i}
-                    i += 1
-                    copyrights.append(temp_dict)
-            #重组数据，以适应前端图表所需格式
-            iperson=[]
-            icopyright=[]
-            ishelf=[]
+            # 重组数据，以适应前端图表所需格式
+            iperson = []
+            icopyright = []
+            ishelf = []
             for data in copyrights:
-
                 iperson.append(data['copyright_person'])
                 icopyright.append(data['copyright_num'])
                 ishelf.append(data['shelf_num'])
 
-
-            return json({"code": 200, "msg": "查询成功", "data": {"year": year, "month": month,"iperson":iperson,"icopyright":icopyright,"ishelf":ishelf}, "total": len(copyrights)})
+            return json({"code": 200, "msg": "查询成功",
+                         "data": {"year": year, "month": month, "iperson": iperson, "icopyright": icopyright,
+                                  "ishelf": ishelf}, "total": len(copyrights)})
         except Exception as e:
             print(e)
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
@@ -264,7 +264,7 @@ async def copyrightsInfo(requset):
             q_all = q_month & q_range
         if year != 'all' and month == 'all':
             q_all = q_year & q_range
-        print(q_all)
+
         try:
             results, total = query_es_return_list(dwt_copyright_info, q_all)
             copyrights = []
@@ -292,8 +292,8 @@ async def copyrightsInfo(requset):
                                    "total_shelf_num": total_shelf_num, "total_sales": total_sales})
             if year != 'all' and month == 'all':
                 copyrights.append({"year": year, "month": "all",
-                               "total_copyright_num": total_copyright_num,
-                               "total_shelf_num": total_shelf_num, "total_sales": total_sales})
+                                   "total_copyright_num": total_copyright_num,
+                                   "total_shelf_num": total_shelf_num, "total_sales": total_sales})
 
             return json({"code": 200, "msg": "查询成功", "data": copyrights, "total": total})
         except Exception as e:
@@ -306,10 +306,14 @@ async def copyrightsInfo(requset):
 @protected
 async def categoryDetail(requset):
     if requset.method == 'POST':
+
         data = requset.json
+        channel = data['channel']
+        q_channel = Q("term", **{"channel": channel})
 
         categorys = data['categorys']
         q_category = []
+
         for category in categorys:
             if q_category:
                 q_category = q_category | Q("term", **{"product_type": category})
@@ -331,7 +335,7 @@ async def categoryDetail(requset):
             amount = house_resources.split("-")
             # 匹配-100这种年限
             if amount[0] == "":
-                print(amount[1])
+
                 if not q0:
                     q0 = Q("range", **{"publishing_house_resources": {'lt': int(amount[1])}})
                 else:
@@ -353,23 +357,32 @@ async def categoryDetail(requset):
         else:
             return json({"code": 500, "msg": "产品类目明细资源数传参错误"}, ensure_ascii=False)
 
-        q_all = q0 & q_range
+        q_all = q0 & q_range & q_channel & q_category & q_publisher
+
         # 默认类别和出版社为全部
-        if data['categorys'][0] != "all":
-            q_all = q_category & q_all
-        if data['publishers'][0] != "all":
-            q_all = q_publisher & q_all
+        # if data['categorys'][0] != "all":
+        #     q_all = q_category & q_all
+        # if data['publishers'][0] != "all":
+        #     q_all = q_publisher & q_all
 
         # q_range = Q('range', **{"create_time": {'gte': yesterday, 'lte': yesterday}})
         try:
             results, total = query_es_return_list(dwt_category, q_all)
             categorys = []
+            publishers = []
+            productTypes = []
             for idata in results:
                 categorys.append({"channel": idata.channel,
                                   "product_type": idata.product_type, "publishing_house": idata.publishing_house,
                                   "product_type_resources": idata.product_type_resources,
                                   "publishing_house_resources": idata.publishing_house_resources})
-            return json({"code": 200, "msg": "查询成功", "data": categorys, "total": total})
+                if idata.publishing_house not in publishers:
+                    publishers.append(idata.publishing_house)
+                if idata.product_type not in productTypes:
+                    productTypes.append(idata.product_type)
+            return json({"code": 200, "msg": "查询成功",
+                         "data": {"categorys": categorys[:100], "publishers": publishers[:100],
+                                  "productTypes": productTypes[:100]}, "total": total})
         except Exception as e:
             print(e)
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
@@ -381,7 +394,6 @@ async def categoryDetail(requset):
 async def publishers(requset):
     if requset.method == 'GET':
 
-
         try:
             results, total = query_es_return_list(dwt_category, q_range)
             copyrights = []
@@ -390,7 +402,7 @@ async def publishers(requset):
                     copyrights.append(idata.publishing_house)
 
             return json(
-                {"code": 200, "msg": "查询成功", "data": {"publishing_house": copyrights}, "total": len(copyrights)})
+                {"code": 200, "msg": "查询成功", "data": {"publishing_house": copyrights[:100]}, "total": len(copyrights)})
         except Exception as e:
             print(e)
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
@@ -413,7 +425,7 @@ async def publishers(requset):
                 productTypes = []
 
             return json(
-                {"code": 200, "msg": "查询成功", "data": {"product_type": productTypes}, "total": len(productTypes)})
+                {"code": 200, "msg": "查询成功", "data": {"product_type": productTypes[:100]}, "total": len(productTypes)})
         except Exception as e:
             print(e)
             return json({"code": 500, "msg": "查询销量趋势指标错误"}, ensure_ascii=False)
